@@ -53,6 +53,15 @@ router.post("/assign", async (req, res) => {
       [patient_id, device_code]
     );
 
+    await pool.query(
+      `
+      UPDATE devices
+      SET last_seen = NOW()
+      WHERE device_code = $1
+      `,
+      [device_code]
+    );
+
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).send(err.message);

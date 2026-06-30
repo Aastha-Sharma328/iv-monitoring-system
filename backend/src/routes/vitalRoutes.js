@@ -12,13 +12,13 @@ router.post("/", async (req, res) => {
     console.log(req.body);
 
     const result = await pool.query(
-      `INSERT INTO vitals (patient_id, heart_rate, spo2, temperature) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [patient_id, heart_rate, spo2, temperature]
+      `INSERT INTO vitals (patient_id, heart_rate, spo2, temperature, weight) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [patient_id, heart_rate, spo2, temperature, weight]
     );
     
-     // Alert Generation
-    const existingAlert = await pool.query(
+// Alert Generation
+const existingAlert = await pool.query(
 `
 SELECT *
 FROM alerts
@@ -48,23 +48,37 @@ patient_id,
 ]
 );
 }
- if (temperature > 38.0 || (currentTemp < 35.0 && currentTemp > 0.0)) {
+ if (temperature > 38.0 || (temperature < 35.0 && temperature > 0.0)) {
   await pool.query(
     `INSERT INTO alerts (patient_id, alert_type, message) VALUES ($1, $2, $3)`,
     [patient_id, "HIGH_TEMPERATURE", "High body temperature detected"]
   );
 }
 
-if (weight > 10000.0) { 
+if (weight < 100.0 && weight > 0) { 
   await pool.query(
     `INSERT INTO alerts (patient_id, alert_type, message) VALUES ($1, $2, $3)`,
-    [patient_id, "HIGH_WEIGHT", "Weight limit exceeded threshold"]
+    [patient_id, "LOW IV Fluid", "IV bottle below 100 ml"]
   );
 }
 
-res.json(result.rows[0]);
+console.log("Patient ID received:", patient_id);
+
+const updateResult = await pool.query(
+`
+UPDATE devices
+SET last_seen = NOW()
+WHERE patient_id = $1
+RETURNING *
+`,
+[patient_id]
+);
+
+console.log("Device updated:", updateResult.rows);
+
     res.json(result.rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).send(err.message);
   }
 });
@@ -97,11 +111,83 @@ router.get("/latest/:patientId", async (req, res) => {
   }
 });
 
+router.get("/live/all", async (req, res) => {
+  try {
+
+    const result = await pool.query(`
+      SELECT
+        p.patient_code,
+        d.device_code,
+
+        CASE
+          WHEN d.last_seen IS NOT NULL
+          AND d.last_seen > NOW() - INTERVAL '5 seconds'
+          THEN 'ACTIVE'
+          ELSE 'OFFLINE'
+        END AS status,
+
+        v.heart_rate,
+        v.spo2,
+        v.temperature,
+        v.weight,
+        v.recorded_at
+
+      FROM vitals v
+
+      JOIN patients p
+      ON v.patient_id = p.patient_id
+
+      LEFT JOIN devices d
+      ON p.patient_id = d.patient_id
+
+      ORDER BY v.recorded_at DESC
+      LIMIT 100
+    `);
+
+    res.json(result.rows);
+
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+router.get("/graph/:patientId", async (req, res) => {
+  try {
+
+    console.log("GRAPH ROUTE HIT");
+    console.log("PATIENT ID:", req.params.patientId);
+
+    const result = await pool.query(
+      `
+      SELECT
+      heart_rate,
+      spo2,
+      temperature,
+      weight,
+      recorded_at
+      FROM vitals
+      WHERE patient_id = $1
+      ORDER BY recorded_at DESC
+      LIMIT 120
+      `,
+      [req.params.patientId]
+    );
+
+    console.log("ROWS FOUND:", result.rows.length);
+
+    res.json(result.rows.reverse());
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+});
+
 // GET /vital/:patientId
 router.get("/:patientId", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM vitals WHERE patient_id = $1",
+      "SELECT * FROM vitals WHERE patient_id = $1 ORDER BY recorded_at DESC",
       [req.params.patientId]
     );
 

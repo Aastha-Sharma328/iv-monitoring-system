@@ -22,11 +22,18 @@ router.get("/monitoring/all", async (req, res) => {
         p.patient_code,
         p.full_name,
         d.device_code,
-        d.status,
+        
+        CASE
+        WHEN d.last_seen IS NOT NULL
+        AND d.last_seen > NOW() - INTERVAL '2 seconds'
+        THEN 'ACTIVE'
+        ELSE 'OFFLINE'
+        END AS status,
 
         v.heart_rate,
         v.spo2,
         v.temperature,
+        v.weight,
         v.recorded_at
 
       FROM patients p
@@ -38,11 +45,11 @@ router.get("/monitoring/all", async (req, res) => {
         SELECT DISTINCT ON (patient_id)
         *
         FROM vitals
-        ORDER BY patient_code, recorded_at DESC
+        ORDER BY patient_id, recorded_at DESC
       ) v
       ON p.patient_id = v.patient_id
 
-      ORDER BY p.patient_code
+      ORDER BY p.patient_id
     `);
 
     res.json(result.rows);

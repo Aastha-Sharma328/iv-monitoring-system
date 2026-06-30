@@ -1,12 +1,38 @@
 import { useState } from 'react';
 import axios from 'axios';
 import './App.css';
+import { ShieldPlus, Eye, EyeOff } from "lucide-react";
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 11V8a5 5 0 0 1 10 0v3" />
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+    </svg>
+  );
+}
+
+function RoleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 12a4.5 4.5 0 1 0-4.5-4.5A4.5 4.5 0 0 0 12 12Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
+    </svg>
+  );
+}
 
 export default function Register() {
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [userID, setuserID] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('Clinician');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,16 +45,15 @@ export default function Register() {
     try {
       const resp = await axios.post('http://localhost:5000/user', {
         full_name: fullName,
-        email,
+        user_id: Number(userID),
         password,
-        role,
+        role: 'Clinician',
       });
 
-      // Save clinician info locally and navigate
       const created = resp.data;
       localStorage.setItem('clinician', JSON.stringify({
         full_name: created.full_name,
-        email: created.email,
+        userID: created.userID,
         role: created.role,
       }));
 
@@ -40,25 +65,33 @@ export default function Register() {
   };
 
   return (
-    <div className="App">
-      <div className="screen">
-        <div className="dashboard-card">
-          <div className="dashboard-header">
-            <div className="dashboard-icon">↗</div>
-            <div>
-              <h1>Vital Monitoring</h1>
-              <p>Register your credentials to get access</p>
-            </div>
+    <div className="auth-page">
+      <div className="auth-panel">
+        <div className="auth-logo">
+        <ShieldPlus size={42} strokeWidth={2.5} />
+          <div className="auth-brand-block">
+            <h1>IAF Vital Monitoring System</h1>
+            <p>Telemetry Network</p>
+          </div>
+          <div className="auth-copy">
+            Create secure clinician access for the medical monitoring dashboard.
+          </div>
+        </div>
+
+        <div className="auth-card">
+          <div className="auth-card-header">
+            <h2>Create clinician account</h2>
+            <p>Professional registration for hospital operations.</p>
           </div>
 
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form className="auth-form" onSubmit={handleSubmit}>
             <label>
-              FULL NAME
+              Full Name
               <div className="input-group">
-                <span className="input-icon">🛡️</span>
+                <span className="input-icon"><UserIcon /></span>
                 <input
                   type="text"
-                  placeholder="e.g. Dr. Arthur Pendelton"
+                  placeholder="e.g. Dr. Ankush Sharma"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -67,53 +100,52 @@ export default function Register() {
             </label>
 
             <label>
-              EMAIL
+              User ID
               <div className="input-group">
-                <span className="input-icon">📧</span>
+                <span className="input-icon"><UserIcon /></span>
                 <input
-                  type="email"
-                  placeholder="e.g. user@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="number"
+                  placeholder="User ID"
+                  value={userID}
+                  onChange={(e) => setuserID(e.target.value)}
                   required
                 />
               </div>
             </label>
 
             <label>
-              PASSWORD
+              Password
               <div className="input-group">
-                <span className="input-icon">🔒</span>
-                <input
-                  type="password"
-                  placeholder="Minimum 4 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <span className="input-icon"><LockIcon /></span>
+                <div className="password-wrapper">
+  <input
+    type={showPassword ? "text" : "password"}
+    placeholder="Enter your password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    required
+  />
+
+  <button
+    type="button"
+    className="password-toggle"
+    onClick={() => setShowPassword(!showPassword)}
+  >
+    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+  </button>
+</div>
               </div>
             </label>
 
-            <label>
-              ROLE
-              <div className="input-group">
-                <span className="input-icon">👔</span>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="Clinician">Clinician</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </div>
-            </label>
+            <div className="auth-row">
+              <span className="checkbox-row">Already registered?</span>
+              <a href="#/login">Sign in</a>
+            </div>
 
             <button type="submit" className="primary-button">
-              Register Credentials ✚
+              Register Credentials
             </button>
           </form>
-
-          <div className="dashboard-footer">
-            <span>Already registered?</span>
-            <a href="#/login">Sign In</a>
-          </div>
         </div>
       </div>
     </div>
