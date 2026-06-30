@@ -112,17 +112,11 @@ Doctors / Medical Staff
 
 - PostgreSQL (Supabase)
 
-## Hardware
-
-- ESP32
-- Load Cell Sensor
-- HX711 Amplifier
-- IV Bottle Setup
-- GSM/4G Module *(Future Integration)*
-
 # Hardware Components
 
 ESP32: Data processing 
+MAX30102: Heart rate and SPO2 measurement
+DS18B20: Body temperature measurement
 Load Cell: Weight measurement 
 HX711: Sensor amplification 
 GSM Module: Alert communication 
