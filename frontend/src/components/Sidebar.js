@@ -96,8 +96,6 @@ export default function Sidebar({ activeItem = 'Dashboard', onNavigate }) {
   const items = isAdmin
   ? [
       'Dashboard',
-      'Patients',
-      'Alerts',
       'Reports',
       'User Management',
       'Settings',
@@ -128,25 +126,7 @@ export default function Sidebar({ activeItem = 'Dashboard', onNavigate }) {
             key={item}
             type="button"
             className={`sidebar-nav-item ${activeItem === item ? 'active' : ''}`}
-            onClick={() => {
-const routes = {
-Dashboard:"#/dashboard",
-Patients:"#/patients",
-Alerts:"#/alerts",
-Reports:"#/reports",
-"User Management":"#/users",
-Settings:"#/settings",
-Logout:"#/"
-};
-
-if(item==="Logout"){
-localStorage.removeItem("clinician");
-}
-
-window.location.hash = routes[item];
-
-}}
->
+            onClick={() => onNavigate?. (item)}>
             <span className="sidebar-nav-icon">{iconMap[item]}</span>
             <span className="sidebar-nav-label">{item}</span>
           </button>

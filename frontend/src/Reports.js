@@ -188,6 +188,12 @@ const exportPDF = () => {
         if (item === "Reports")
           window.location.hash = "#/reports";
 
+        if (item === 'User Management') 
+          window.location.hash = '#/users';
+
+        if (item === "Settings")
+          window.location.hash = "#/settings";
+        
         if (item === "Logout") {
           localStorage.removeItem("clinician");
           window.location.hash = "#/";

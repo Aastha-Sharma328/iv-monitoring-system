@@ -187,11 +187,11 @@ else {
       break;
 
     case '/patients':
-      content = <Dashboard view="patients" />;
+      content = <Dashboard />;
       break;
 
     case '/alerts':
-      content = <Dashboard view="alerts" />;
+      content = <Dashboard />;
       break;
 
     case '/reports':

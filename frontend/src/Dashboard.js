@@ -46,7 +46,6 @@ function Badge({ children, tone = 'neutral' }) {
 }
 
 export default function Dashboard() {
-  const view = window.location.hash.includes('/patients') ? 'patients' : window.location.hash.includes('/alerts') ? 'alerts' : 'dashboard';
   const clinician = JSON.parse(localStorage.getItem('clinician')) || {};
   const [userData, setUserData] = useState(null);
   const [stats, setStats] = useState({
@@ -244,20 +243,51 @@ export default function Dashboard() {
   const isClinician = userData?.role === 'Clinician';
   const lowFluidCount = stats.FluidDeficit ?? stats.fluidDeficit ?? 0;
 
+  console.log("Monitoring Data =", monitoringData);
+
   return (
     <PageLayout
       activeItem="Dashboard"
       onNavigate={(item) => {
-        if (item === 'Dashboard') window.location.hash = '#/dashboard';
-        if (item === 'Patients') document.getElementById('patient-section')?.scrollIntoView({ behavior: 'smooth' });
-        if (item === 'Alerts') document.getElementById('active-alerts')?.scrollIntoView({ behavior: 'smooth' });
-        if (item === 'Devices') document.getElementById('fluid-alerts')?.scrollIntoView({ behavior: 'smooth' });
-        if (item === 'Reports') window.location.hash = 
-        '#/reports';
-        if (item === 'User Management') window.location.hash = '#/users';
-        if (item === 'Settings') window.location.hash = '#/settings';
-        if (item === 'Logout') handleLogout();
-      }}
+
+  if (item === 'Dashboard') {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  if (item === 'Patients') {
+    document.getElementById('patient-section')
+      ?.scrollIntoView({
+        behavior: 'smooth'
+      });
+  }
+
+  if (item === 'Alerts') {
+    document.getElementById('active-alerts')
+      ?.scrollIntoView({
+        behavior: 'smooth'
+      });
+  }
+
+  if (item === 'Logout') {
+    handleLogout();
+  }
+
+  if (item === 'Reports') {
+   window.location.hash = '#/reports';
+  }
+
+  if (item === 'User Management') {
+   window.location.hash = '#/users';
+  }
+
+  if (item === 'Settings') {
+   window.location.hash = '#/settings';
+  }
+
+}}
     >
       <div className="dashboard-page">
         <header className="dashboard-hero">
@@ -361,19 +391,21 @@ export default function Dashboard() {
               <div className="section-heading">
                 <div>
                   <h2 className="section-title">Patient Cards</h2>
-                  <p className="section-subtitle">Ward view with current monitoring snapshot</p>
+                  <p className="section-subtitle">Patients grid</p>
                 </div>
               </div>
-
+             
               <div className="patient-card-grid">
-                {monitoringData.map((patient) => {
+                {monitoringData.map((patient, index) => {
                   const critical =
                     patient.heart_rate > 120 ||
                     patient.spo2 < 90 ||
                     patient.temperature > 38.5;
 
                   return (
-                    <article key={patient.patient_id} className={`patient-monitor-card ${critical ? 'critical' : 'normal'}`}>
+                    <article
+                       key={`${patient.patient_id}-${index}`}
+                       className={`patient-monitor-card ${critical ? 'critical' : 'normal'}`}>
                       <div className="patient-card-top">
                         <div>
                           <div className="patient-code">{patient.patient_code}</div>
@@ -424,8 +456,8 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {alerts.slice(0, 10).map((alert) => (
-                      <tr key={alert.alert_id}>
+                    {alerts.slice(0, 10).map((alert, index) => (
+                      <tr key={`${alert.alert_id}-${index}`}>
                         <td>{alert.patient_code} - {alert.full_name}</td>
                         <td>{alert.message}</td>
                         <td>

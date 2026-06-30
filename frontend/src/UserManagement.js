@@ -315,9 +315,9 @@ export default function UserManagement() {
         if (item === 'Dashboard') window.location.hash = '#/dashboard';
         if (item === 'Patients') window.location.hash = '#/dashboard';
         if (item === 'Alerts') window.location.hash = '#/dashboard';
-        if (item === 'Reports') window.location.hash = '#/dashboard';
+        if (item === 'Reports') window.location.hash = '#/reports';
         if (item === 'User Management') window.location.hash = '#/users';
-        if (item === 'Settings') window.location.hash = '#/dashboard';
+        if (item === 'Settings') window.location.hash = '#/settings';
         if (item === 'Logout') handleLogout();
       }}
     >
